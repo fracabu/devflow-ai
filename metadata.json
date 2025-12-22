@@ -1,0 +1,5 @@
+{
+  "name": "DevFlow AI",
+  "description": "An AI-powered platform that transforms GitHub repositories into SEO-optimized articles for Dev.to, automating documentation and content marketing for developers.",
+  "requestFramePermissions": []
+}
