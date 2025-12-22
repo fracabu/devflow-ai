@@ -26,6 +26,10 @@
   <img src="https://img.shields.io/github/forks/fracabu/devflow-ai?style=social" alt="Forks">
 </p>
 
+<p align="center">
+  <img src="./assets/devflow-screenshot.png" alt="DevFlow AI Screenshot" width="800">
+</p>
+
 ---
 
 ## 🇮🇹 Italiano
