@@ -34,6 +34,9 @@
 
 **DevFlow AI** è una piattaforma che trasforma repository GitHub in articoli tecnici di alta qualità, ottimizzati per SEO. Costruito per sviluppatori che vogliono scalare il content marketing senza sacrificare tempo di coding.
 
+<img width="1600" height="739" alt="image" src="https://github.com/user-attachments/assets/03389569-d94c-4278-ba91-6d57319bc08d" />
+
+
 ### ✨ Caratteristiche
 
 | Funzionalità | Descrizione |
@@ -140,6 +143,8 @@ devflow-ai/
 ### Overview
 
 **DevFlow AI** is a platform that transforms GitHub repositories into high-quality, SEO-optimized technical articles. Built for developers who want to scale content marketing without sacrificing coding time.
+
+<img width="1600" height="739" alt="image" src="https://github.com/user-attachments/assets/e30e0b47-1aaf-4f8e-8f31-dcfd88a9c0e8" />
 
 ### ✨ Features
 
