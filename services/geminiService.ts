@@ -22,17 +22,24 @@ const STYLE_GUIDE = `
 - Tono: Diretto, pratico, no-bullshit, prima persona ("I built", "I needed")
 - IMPORTANTE: NON inserire il titolo dell'articolo all'inizio del content. Inizia direttamente con l'introduzione.
 - Usa sempre il tag embed di GitHub: {% github fracabu/REPO_NAME %}
+
+# DEV.TO BEST PRACTICES
+- Titoli: Usa curiosità + azione + numeri quando possibile (es. "How I Cut 10 Hours of Manual Work to 5 Minutes")
+- Headline emotiva: Fai percepire il pain point subito
+- Struttura scannable: subheadings, bullet points, paragrafi brevi
+- Engagement finale: Chiudi con una domanda per stimolare commenti
 `;
 
 const CONTENT_STRUCTURE = `
-# ESTRUTTURA OBBLIGATORIA
-1. **Hook**: Introduzione coinvolgente che spiega il problema.
-2. **The Problem**: Difficoltà riscontrate prima di questo tool.
+# STRUTTURA OBBLIGATORIA
+1. **Personal Story Hook** (2-3 frasi): Inizia con una micro-storia VERA e personale. Es: "Last Saturday I was mass-renaming 200 files manually. After 2 hours of copy-paste hell, I snapped and built this." Deve sembrare autentico, non un template.
+2. **The Problem**: Descrivi il pain point in modo che il lettore pensi "anche io ho questo problema!"
 3. **The Solution**: Presentazione del tool e stack tecnologico.
-4. **How It Works**: Dettagli tecnici e architettura.
-5. **📊 My Results**: Inserisci SEMPRE una tabella Markdown che confronti l'approccio manuale con quello automatizzato (es. Tempo, Costo, Errori).
-6. **💡 Pro Tips**: Fornisci almeno 2 consigli pratici sull'utilizzo.
-7. **Conclusion & Signature**: Firma finale con link.
+4. **How It Works**: Dettagli tecnici e architettura con code snippets.
+5. **📊 My Results**: Tabella Markdown che confronta prima/dopo (Tempo, Costo, Errori).
+6. **💡 Pro Tips**: 2 consigli pratici sull'utilizzo.
+7. **Engagement Question**: Prima della firma, fai una domanda aperta per stimolare commenti. Es: "What's the most tedious task you'd love to automate?"
+8. **Signature**: Firma finale con link.
 `;
 
 export const analyzeRepoAndGenerateArticle = async (

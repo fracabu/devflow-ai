@@ -47,7 +47,9 @@ import {
   saveProviderConfig,
   getApiKey,
   saveApiKey,
-  hasApiKey
+  hasApiKey,
+  getDevtoApiKey,
+  saveDevtoApiKey
 } from './services/ai-providers';
 
 const translations = {
@@ -236,7 +238,7 @@ export default function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasKey, setHasKey] = useState(true);
   
-  const [devtoKey, setDevtoKey] = useState<string>('');
+  const [devtoKey, setDevtoKey] = useState<string>(() => getDevtoApiKey());
   const [isPushingToDevto, setIsPushingToDevto] = useState(false);
   const [lastPushedUrl, setLastPushedUrl] = useState<string | null>(null);
   const [pushError, setPushError] = useState<string | null>(null);
@@ -260,9 +262,6 @@ export default function App() {
   useEffect(() => {
     const savedLang = localStorage.getItem('devflow_lang') as Language;
     if (savedLang) setLang(savedLang);
-
-    const savedDevtoKey = localStorage.getItem('devflow_devto_key');
-    if (savedDevtoKey) setDevtoKey(savedDevtoKey);
 
     const savedUsername = localStorage.getItem('devflow_username');
     if (savedUsername) {
@@ -302,11 +301,6 @@ export default function App() {
     localStorage.setItem('devflow_lang', l);
   };
 
-  const saveDevtoKey = (key: string) => {
-    setDevtoKey(key);
-    localStorage.setItem('devflow_devto_key', key);
-  };
-
   const updateProviderConfig = (updates: Partial<AIProviderConfig>) => {
     const newConfig = { ...providerConfig, ...updates };
     // Reset model to default when changing provider
@@ -325,6 +319,11 @@ export default function App() {
   const handleSaveGeminiKey = (key: string) => {
     setGeminiKey(key);
     saveApiKey('gemini', key);
+  };
+
+  const handleSaveDevtoKey = (key: string) => {
+    setDevtoKey(key);
+    saveDevtoApiKey(key);
   };
 
   const handleOpenKeyPicker = async () => {
@@ -398,32 +397,28 @@ export default function App() {
     setLastPushedUrl(null);
     setPushError(null);
     try {
-      const sanitizedTags = article.seoTags.map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(t => t.length >= 2).slice(0, 4);
-      const response = await fetch('https://dev.to/api/articles', {
+      const sanitizedTags = article.seoTags.map(tag => tag.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(tag => tag.length >= 2).slice(0, 4);
+      const response = await fetch('/api/devto', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'api-key': devtoKey },
-        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': devtoKey
+        },
         body: JSON.stringify({
-          article: {
-            title: article.title,
-            body_markdown: article.content,
-            published: false,
-            tags: sanitizedTags,
-          }
+          title: article.title,
+          body_markdown: article.content,
+          published: false,
+          tags: sanitizedTags,
+          description: article.summary || '',
         })
       });
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Failed to push to Dev.to');
-      }
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to push to Dev.to');
+      }
       setLastPushedUrl(data.url);
     } catch (err: any) {
-      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
-        setPushError(t.pushError);
-      } else {
-        setPushError(err.message || t.pushError);
-      }
+      setPushError(err.message || t.pushError);
     } finally {
       setIsPushingToDevto(false);
     }
@@ -623,16 +618,14 @@ ${article.content}`;
                 <p className="text-zinc-500 font-mono text-sm text-center mb-12">{t.videoDescription}</p>
 
                 <div className="max-w-4xl mx-auto">
-                  <div className="aspect-video bg-zinc-900/80 border border-zinc-800 rounded-3xl flex items-center justify-center relative overflow-hidden group cursor-pointer hover:border-cyan-500/30 transition-all">
-                    {/* Placeholder - Replace with actual NotebookLM embed */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5" />
-                    <div className="relative z-10 text-center">
-                      <div className="w-20 h-20 bg-cyan-500/20 border border-cyan-500/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:bg-cyan-500/30 transition-all">
-                        <Play size={32} className="text-cyan-400 ml-1" />
-                      </div>
-                      <p className="text-zinc-600 font-mono text-xs uppercase tracking-widest">NotebookLM Video</p>
-                      <p className="text-zinc-700 font-mono text-[10px] mt-2">Coming Soon</p>
-                    </div>
+                  <div className="aspect-video bg-zinc-900/80 border border-zinc-800 rounded-3xl overflow-hidden hover:border-cyan-500/30 transition-all">
+                    <video
+                      controls
+                      className="w-full h-full"
+                    >
+                      <source src="/DevFlow_AI.mp4" type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   </div>
                 </div>
               </section>
@@ -942,7 +935,7 @@ ${article.content}`;
                           ref={devtoInputRef}
                           type="password"
                           value={devtoKey}
-                          onChange={(e) => saveDevtoKey(e.target.value)}
+                          onChange={(e) => handleSaveDevtoKey(e.target.value)}
                           placeholder={t.devtoKeyPlaceholder}
                           className={`w-full pl-12 pr-4 py-3 bg-zinc-950 border ${!devtoKey ? 'border-amber-500/30 focus:border-amber-500' : 'border-zinc-800 focus:border-cyan-500'} rounded-xl font-mono text-xs outline-none transition-all`}
                         />

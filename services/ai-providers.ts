@@ -91,6 +91,23 @@ export function hasApiKey(provider: AIProvider): boolean {
   return !!getApiKey(provider);
 }
 
+// Dev.to API Key management
+export function getDevtoApiKey(): string {
+  return localStorage.getItem('devflow_devto_key') || '';
+}
+
+export function saveDevtoApiKey(key: string): void {
+  if (key) {
+    localStorage.setItem('devflow_devto_key', key);
+  } else {
+    localStorage.removeItem('devflow_devto_key');
+  }
+}
+
+export function hasDevtoApiKey(): boolean {
+  return !!getDevtoApiKey();
+}
+
 // OpenRouter API call (uses OpenAI-compatible API)
 async function callOpenRouter(
   systemPrompt: string,
