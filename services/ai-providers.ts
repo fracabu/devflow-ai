@@ -151,7 +151,7 @@ async function callOpenRouter(
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage },
       ],
-      max_tokens: 8192,
+      max_tokens: 16384,
     }),
   });
 
@@ -191,7 +191,7 @@ async function callGemini(
     model,
     contents: fullPrompt,
     config: {
-      maxOutputTokens: 8192,
+      maxOutputTokens: 16384,
     }
   });
 
