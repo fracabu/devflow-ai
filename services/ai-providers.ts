@@ -108,6 +108,23 @@ export function hasDevtoApiKey(): boolean {
   return !!getDevtoApiKey();
 }
 
+// GitHub Token management
+export function getGithubToken(): string {
+  return localStorage.getItem('devflow_github_token') || '';
+}
+
+export function saveGithubToken(token: string): void {
+  if (token) {
+    localStorage.setItem('devflow_github_token', token);
+  } else {
+    localStorage.removeItem('devflow_github_token');
+  }
+}
+
+export function hasGithubToken(): boolean {
+  return !!getGithubToken();
+}
+
 // OpenRouter API call (uses OpenAI-compatible API)
 async function callOpenRouter(
   systemPrompt: string,

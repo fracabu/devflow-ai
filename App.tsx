@@ -49,7 +49,9 @@ import {
   saveApiKey,
   hasApiKey,
   getDevtoApiKey,
-  saveDevtoApiKey
+  saveDevtoApiKey,
+  getGithubToken,
+  saveGithubToken
 } from './services/ai-providers';
 
 const translations = {
@@ -130,6 +132,9 @@ const translations = {
     openrouterKeyPlaceholder: 'sk-or-v1-...',
     geminiKey: 'Gemini API Key',
     geminiKeyPlaceholder: 'AIzaSy...',
+    githubToken: 'GitHub Token',
+    githubTokenPlaceholder: 'ghp_...',
+    githubTokenDesc: 'Per vedere repo private e aumentare il rate limit',
     keyConfigured: 'Configurata',
     keyMissing: 'Mancante',
     getKeyAt: 'Ottieni chiave su'
@@ -211,6 +216,9 @@ const translations = {
     openrouterKeyPlaceholder: 'sk-or-v1-...',
     geminiKey: 'Gemini API Key',
     geminiKeyPlaceholder: 'AIzaSy...',
+    githubToken: 'GitHub Token',
+    githubTokenPlaceholder: 'ghp_...',
+    githubTokenDesc: 'To see private repos and increase rate limit',
     keyConfigured: 'Configured',
     keyMissing: 'Missing',
     getKeyAt: 'Get key at'
@@ -247,7 +255,8 @@ export default function App() {
   const [providerConfig, setProviderConfig] = useState<AIProviderConfig>(getStoredProviderConfig);
   const [openrouterKey, setOpenrouterKey] = useState<string>(() => getApiKey('openrouter'));
   const [geminiKey, setGeminiKey] = useState<string>(() => getApiKey('gemini'));
-  
+  const [githubToken, setGithubToken] = useState<string>(() => getGithubToken());
+
   const devtoInputRef = useRef<HTMLInputElement>(null);
 
   const [editorialPlan, setEditorialPlan] = useState<EditorialItem[]>(() => {
@@ -326,6 +335,11 @@ export default function App() {
     saveDevtoApiKey(key);
   };
 
+  const handleSaveGithubToken = (token: string) => {
+    setGithubToken(token);
+    saveGithubToken(token);
+  };
+
   const handleOpenKeyPicker = async () => {
     const aiStudio = (window as any).aistudio;
     if (aiStudio) {
@@ -340,7 +354,12 @@ export default function App() {
     setIsLoadingRepos(true);
     setError(null);
     try {
-      const response = await fetch(`https://api.github.com/users/${targetUsername}/repos?sort=updated&per_page=30`);
+      const token = getGithubToken();
+      const headers: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const response = await fetch(
+        `https://api.github.com/users/${targetUsername}/repos?sort=updated&per_page=100`,
+        { headers }
+      );
       if (!response.ok) throw new Error('User not found or API limit reached');
       const data = await response.json();
       setRepos(data);
@@ -911,6 +930,30 @@ ${article.content}`;
                   </div>
                   <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono text-cyan-500 hover:underline flex items-center gap-1">
                     {t.getKeyAt} aistudio.google.com/apikey <ExternalLink size={10} />
+                  </a>
+                </div>
+
+                {/* GitHub Token */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest">{t.githubToken}</label>
+                    <span className={`text-[8px] font-mono font-bold px-2 py-0.5 rounded uppercase ${githubToken ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-700/50 text-zinc-500 border border-zinc-700'}`}>
+                      {githubToken ? t.keyConfigured : 'Optional'}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-zinc-600 font-mono">{t.githubTokenDesc}</p>
+                  <div className="relative">
+                    <Github size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
+                    <input
+                      type="password"
+                      value={githubToken}
+                      onChange={(e) => handleSaveGithubToken(e.target.value)}
+                      placeholder={t.githubTokenPlaceholder}
+                      className="w-full pl-12 pr-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl font-mono text-xs outline-none focus:border-cyan-500 transition-all"
+                    />
+                  </div>
+                  <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono text-cyan-500 hover:underline flex items-center gap-1">
+                    {t.getKeyAt} github.com/settings/tokens <ExternalLink size={10} />
                   </a>
                 </div>
               </div>
