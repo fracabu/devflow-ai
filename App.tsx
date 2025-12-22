@@ -641,7 +641,23 @@ ${article.content}`;
           )}
 
           {currentView === 'settings' && (
-            <div className="max-w-xl animate-in fade-in slide-in-from-left-4 duration-500 space-y-6"><h2 className="text-2xl font-mono font-bold uppercase tracking-tighter border-b border-zinc-800 pb-4">{t.globalConfig}</h2><div className="space-y-4"><div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4"><div className="flex items-center space-x-3 text-cyan-500"><Languages size={18} /><h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em]">{t.langSettings}</h3></div><p className="text-[11px] text-zinc-500 font-mono">{t.langSelect}</p><div className="flex gap-2"><button onClick={() => toggleLang('it')} className={`flex-1 py-3 rounded-xl font-mono text-xs border transition-all ${lang === 'it' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 font-bold' : 'bg-zinc-950 border-zinc-800 text-zinc-500'}`}>ITALIANO</button><button onClick={() => toggleLang('en')} className={`flex-1 py-3 rounded-xl font-mono text-xs border transition-all ${lang === 'en' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 font-bold' : 'bg-zinc-950 border-zinc-800 text-zinc-500'}`}>ENGLISH</button></div></div>
+            <div className="animate-in fade-in slide-in-from-left-4 duration-500 space-y-6">
+              <h2 className="text-2xl font-mono font-bold uppercase tracking-tighter border-b border-zinc-800 pb-4">{t.globalConfig}</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  {/* Language Settings */}
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-4">
+                    <div className="flex items-center space-x-3 text-cyan-500">
+                      <Languages size={18} />
+                      <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em]">{t.langSettings}</h3>
+                    </div>
+                    <p className="text-[11px] text-zinc-500 font-mono">{t.langSelect}</p>
+                    <div className="flex gap-2">
+                      <button onClick={() => toggleLang('it')} className={`flex-1 py-3 rounded-xl font-mono text-xs border transition-all ${lang === 'it' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 font-bold' : 'bg-zinc-950 border-zinc-800 text-zinc-500'}`}>ITALIANO</button>
+                      <button onClick={() => toggleLang('en')} className={`flex-1 py-3 rounded-xl font-mono text-xs border transition-all ${lang === 'en' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-400 font-bold' : 'bg-zinc-950 border-zinc-800 text-zinc-500'}`}>ENGLISH</button>
+                    </div>
+                  </div>
 
               {/* AI Provider Selection */}
               <div className="bg-zinc-900 border border-cyan-500/30 rounded-2xl p-6 space-y-4 shadow-[0_0_20px_rgba(34,211,238,0.1)]">
@@ -746,8 +762,69 @@ ${article.content}`;
                   </a>
                 </div>
               </div>
+                </div>
 
-              <div id="devto-config" className={`bg-zinc-900 border ${!devtoKey ? 'border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'border-zinc-800'} rounded-2xl p-6 space-y-4 transition-all`}><div className="flex items-center justify-between"><div className="flex items-center space-x-3 text-cyan-500"><Send size={18} /><h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em]">{t.devtoIntegration}</h3></div>{!devtoKey && <span className="text-[8px] font-mono font-bold px-2 py-0.5 bg-amber-500 text-black rounded uppercase">Missing Key</span>}</div><p className="text-[11px] text-zinc-500 font-mono">Inserisci la tua API Key per abilitare l'invio delle bozze direttamente dal Laboratorio.</p><div className="space-y-3"><div className="relative"><Key size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" /><input ref={devtoInputRef} type="password" value={devtoKey} onChange={(e) => saveDevtoKey(e.target.value)} placeholder={t.devtoKeyPlaceholder} className={`w-full pl-12 pr-4 py-3 bg-zinc-950 border ${!devtoKey ? 'border-amber-500/30 focus:border-amber-500' : 'border-zinc-800 focus:border-cyan-500'} rounded-xl font-mono text-xs outline-none transition-all`} /></div></div></div><div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-6 shadow-2xl"><div className="flex items-center space-x-3 text-cyan-500"><CreditCard size={18} /><h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em]">{t.apiModule}</h3></div><div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl flex items-center justify-between"><div className="space-y-1"><p className="font-mono text-zinc-200 text-xs">{t.authState}</p><p className={`text-[9px] font-mono uppercase ${hasKey ? 'text-emerald-500' : 'text-red-500'}`}>{hasKey ? t.verified : t.locked}</p></div><button onClick={handleOpenKeyPicker} className="text-[9px] font-mono font-bold text-cyan-400 border border-cyan-400/20 px-4 py-2 rounded-lg uppercase hover:bg-cyan-400/10">{t.updateKey}</button></div><div className="bg-cyan-500/5 p-4 rounded-xl border border-cyan-500/10"><div className="flex items-center space-x-2 text-cyan-400 mb-3"><Info size={14} /><span className="text-[9px] font-mono font-bold uppercase tracking-widest">Guide</span></div><ul className="text-[10px] text-zinc-500 font-mono space-y-2 list-disc ml-4"><li>I modelli Pro richiedono billing attivo su Google AI Studio.</li><li>Senza billing, riceverai errori di autorizzazione 403.</li></ul></div></div></div></div>
+                {/* Right Column */}
+                <div className="space-y-4">
+                  {/* Dev.to Integration */}
+                  <div id="devto-config" className={`bg-zinc-900 border ${!devtoKey ? 'border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'border-zinc-800'} rounded-2xl p-6 space-y-4 transition-all`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 text-cyan-500">
+                        <Send size={18} />
+                        <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em]">{t.devtoIntegration}</h3>
+                      </div>
+                      {!devtoKey && <span className="text-[8px] font-mono font-bold px-2 py-0.5 bg-amber-500 text-black rounded uppercase">Missing Key</span>}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 font-mono">Inserisci la tua API Key per abilitare l'invio delle bozze direttamente dal Laboratorio.</p>
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <Key size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-600" />
+                        <input
+                          ref={devtoInputRef}
+                          type="password"
+                          value={devtoKey}
+                          onChange={(e) => saveDevtoKey(e.target.value)}
+                          placeholder={t.devtoKeyPlaceholder}
+                          className={`w-full pl-12 pr-4 py-3 bg-zinc-950 border ${!devtoKey ? 'border-amber-500/30 focus:border-amber-500' : 'border-zinc-800 focus:border-cyan-500'} rounded-xl font-mono text-xs outline-none transition-all`}
+                        />
+                      </div>
+                      <a href="https://dev.to/settings/extensions" target="_blank" rel="noopener noreferrer" className="text-[9px] font-mono text-cyan-500 hover:underline flex items-center gap-1">
+                        {t.getKeyAt} dev.to/settings/extensions <ExternalLink size={10} />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* API Status Module */}
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-6">
+                    <div className="flex items-center space-x-3 text-cyan-500">
+                      <CreditCard size={18} />
+                      <h3 className="text-[10px] font-mono font-bold uppercase tracking-[0.2em]">{t.apiModule}</h3>
+                    </div>
+                    <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="font-mono text-zinc-200 text-xs">{t.authState}</p>
+                        <p className={`text-[9px] font-mono uppercase ${hasKey ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {hasKey ? t.verified : t.locked}
+                        </p>
+                      </div>
+                      <button onClick={handleOpenKeyPicker} className="text-[9px] font-mono font-bold text-cyan-400 border border-cyan-400/20 px-4 py-2 rounded-lg uppercase hover:bg-cyan-400/10">
+                        {t.updateKey}
+                      </button>
+                    </div>
+                    <div className="bg-cyan-500/5 p-4 rounded-xl border border-cyan-500/10">
+                      <div className="flex items-center space-x-2 text-cyan-400 mb-3">
+                        <Info size={14} />
+                        <span className="text-[9px] font-mono font-bold uppercase tracking-widest">Guide</span>
+                      </div>
+                      <ul className="text-[10px] text-zinc-500 font-mono space-y-2 list-disc ml-4">
+                        <li>I modelli Pro richiedono billing attivo su Google AI Studio.</li>
+                        <li>Senza billing, riceverai errori di autorizzazione 403.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </main>
