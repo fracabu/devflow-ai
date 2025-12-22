@@ -187,8 +187,14 @@ export default function App() {
   const [error, setError] = useState<{ message: string; isPermission?: boolean } | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
   
-  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
-  const [article, setArticle] = useState<GeneratedArticle | null>(null);
+  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(() => {
+    const saved = localStorage.getItem('devflow_selected_repo');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [article, setArticle] = useState<GeneratedArticle | null>(() => {
+    const saved = localStorage.getItem('devflow_current_article');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [isGenerating, setIsGenerating] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hasKey, setHasKey] = useState(true);
@@ -205,7 +211,10 @@ export default function App() {
   
   const devtoInputRef = useRef<HTMLInputElement>(null);
 
-  const [editorialPlan, setEditorialPlan] = useState<EditorialItem[]>([]);
+  const [editorialPlan, setEditorialPlan] = useState<EditorialItem[]>(() => {
+    const saved = localStorage.getItem('devflow_editorial_plan');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [viewingSavedArticle, setViewingSavedArticle] = useState<EditorialItem | null>(null);
 
   const t = translations[lang];
@@ -222,21 +231,6 @@ export default function App() {
     if (savedUsername) {
       setUsername(savedUsername);
       fetchRepos(savedUsername);
-    }
-
-    const savedPlan = localStorage.getItem('devflow_editorial_plan');
-    if (savedPlan) {
-      setEditorialPlan(JSON.parse(savedPlan));
-    }
-
-    const savedCurrentArticle = localStorage.getItem('devflow_current_article');
-    if (savedCurrentArticle) {
-      setArticle(JSON.parse(savedCurrentArticle));
-    }
-
-    const savedSelectedRepo = localStorage.getItem('devflow_selected_repo');
-    if (savedSelectedRepo) {
-      setSelectedRepo(JSON.parse(savedSelectedRepo));
     }
 
     const checkKey = async () => {
