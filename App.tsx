@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { 
+import {
+  Home,
   LayoutDashboard, 
   Github, 
   FileText, 
@@ -28,9 +29,11 @@ import {
   RefreshCw, 
   Lock, 
   AlertCircle, 
-  Key, 
+  Key,
   FileJson,
-  MousePointer2
+  MousePointer2,
+  Play,
+  Zap
 } from 'lucide-react';
 import { GitHubRepo, GeneratedArticle, EditorialItem, View, Language } from './types';
 import { analyzeRepoAndGenerateArticle } from './services/geminiService';
@@ -49,6 +52,20 @@ import {
 
 const translations = {
   it: {
+    home: 'Home',
+    heroTitle: 'Da Repo a Articolo',
+    heroSubtitle: 'in 30 secondi',
+    heroDescription: 'Trasforma i tuoi repository GitHub in articoli tecnici SEO-ottimizzati con AI. Modelli gratuiti inclusi.',
+    heroButton: 'Inizia Ora',
+    howItWorks: 'Come Funziona',
+    step1Title: 'Connetti GitHub',
+    step1Desc: 'Inserisci il tuo username e seleziona un repository pubblico',
+    step2Title: 'Genera con AI',
+    step2Desc: 'Scegli tra 18+ modelli AI inclusi 5 gratuiti via OpenRouter',
+    step3Title: 'Pubblica su Dev.to',
+    step3Desc: 'Copia il Markdown con frontmatter YAML pronto per Dev.to',
+    watchDemo: 'Guarda la Demo',
+    videoDescription: 'Video overview generato con NotebookLM',
     dashboard: 'Dashboard',
     sync: 'Source Sync',
     editor: 'Laboratorio',
@@ -113,6 +130,20 @@ const translations = {
     getKeyAt: 'Ottieni chiave su'
   },
   en: {
+    home: 'Home',
+    heroTitle: 'From Repo to Article',
+    heroSubtitle: 'in 30 seconds',
+    heroDescription: 'Transform your GitHub repositories into SEO-optimized technical articles with AI. Free models included.',
+    heroButton: 'Get Started',
+    howItWorks: 'How It Works',
+    step1Title: 'Connect GitHub',
+    step1Desc: 'Enter your username and select a public repository',
+    step2Title: 'Generate with AI',
+    step2Desc: 'Choose from 18+ AI models including 5 free via OpenRouter',
+    step3Title: 'Publish to Dev.to',
+    step3Desc: 'Copy Markdown with YAML frontmatter ready for Dev.to',
+    watchDemo: 'Watch Demo',
+    videoDescription: 'Video overview generated with NotebookLM',
     dashboard: 'Dashboard',
     sync: 'Source Sync',
     editor: 'Lab',
@@ -179,7 +210,7 @@ const translations = {
 };
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [currentView, setCurrentView] = useState<View>('home');
   const [lang, setLang] = useState<Language>('it');
   const [username, setUsername] = useState<string>('');
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
@@ -478,6 +509,7 @@ ${article.content}`;
       <aside className={`fixed inset-0 z-40 md:relative md:flex md:w-64 bg-zinc-950 border-r border-zinc-800 flex-col p-6 space-y-8 transition-transform duration-300 md:translate-x-0 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="hidden md:flex items-center space-x-2 text-cyan-400 mb-4"><div className="p-2 bg-cyan-400/10 rounded-lg border border-cyan-400/20"><Cpu size={28} /></div><h1 className="text-xl font-mono font-bold tracking-tighter uppercase">DevFlow_AI</h1></div>
         <nav className="flex-1 space-y-2">
+          <NavItem icon={Home} label={t.home} view="home" />
           <NavItem icon={LayoutDashboard} label={t.dashboard} view="dashboard" />
           <NavItem icon={Github} label={t.sync} view="connect" />
           <NavItem icon={FileText} label={t.editor} view="editor" />
@@ -505,6 +537,102 @@ ${article.content}`;
         </header>
 
         <div className="p-4 md:p-8 max-w-7xl mx-auto">
+          {/* HOME VIEW */}
+          {currentView === 'home' && (
+            <div className="animate-in fade-in duration-700">
+              {/* HERO SECTION */}
+              <section className="text-center py-16 md:py-24 relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent rounded-3xl" />
+                <div className="relative z-10">
+                  <div className="inline-flex items-center gap-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full px-4 py-2 mb-8">
+                    <Zap size={14} className="text-cyan-400" />
+                    <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">5 Free AI Models</span>
+                  </div>
+
+                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-mono font-bold tracking-tighter mb-2">
+                    <span className="text-white">{t.heroTitle}</span>
+                  </h1>
+                  <h2 className="text-4xl md:text-6xl lg:text-7xl font-mono font-bold tracking-tighter text-cyan-400 mb-8">
+                    {t.heroSubtitle}
+                  </h2>
+
+                  <p className="text-zinc-400 font-mono text-sm md:text-base max-w-2xl mx-auto mb-12 leading-relaxed">
+                    {t.heroDescription}
+                  </p>
+
+                  <button
+                    onClick={() => setCurrentView('connect')}
+                    className="group bg-cyan-500 text-black px-8 py-4 rounded-2xl font-bold font-mono text-sm uppercase shadow-[0_0_40px_rgba(34,211,238,0.4)] hover:shadow-[0_0_60px_rgba(34,211,238,0.6)] hover:scale-105 transition-all flex items-center gap-3 mx-auto"
+                  >
+                    {t.heroButton}
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </section>
+
+              {/* HOW IT WORKS SECTION */}
+              <section className="py-16 md:py-24">
+                <h3 className="text-2xl md:text-3xl font-mono font-bold text-center mb-16 tracking-tighter">
+                  <span className="text-zinc-500">//</span> {t.howItWorks}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                  {/* Step 1 */}
+                  <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 hover:border-cyan-500/30 transition-all group">
+                    <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Github size={24} className="text-cyan-400" />
+                    </div>
+                    <div className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-2">Step_01</div>
+                    <h4 className="text-xl font-mono font-bold mb-3">{t.step1Title}</h4>
+                    <p className="text-zinc-500 font-mono text-sm leading-relaxed">{t.step1Desc}</p>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 hover:border-cyan-500/30 transition-all group">
+                    <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Cpu size={24} className="text-cyan-400" />
+                    </div>
+                    <div className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-2">Step_02</div>
+                    <h4 className="text-xl font-mono font-bold mb-3">{t.step2Title}</h4>
+                    <p className="text-zinc-500 font-mono text-sm leading-relaxed">{t.step2Desc}</p>
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl p-8 hover:border-cyan-500/30 transition-all group">
+                    <div className="w-14 h-14 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Send size={24} className="text-cyan-400" />
+                    </div>
+                    <div className="text-[10px] font-mono text-cyan-500 uppercase tracking-widest mb-2">Step_03</div>
+                    <h4 className="text-xl font-mono font-bold mb-3">{t.step3Title}</h4>
+                    <p className="text-zinc-500 font-mono text-sm leading-relaxed">{t.step3Desc}</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* VIDEO SECTION */}
+              <section className="py-16 md:py-24">
+                <h3 className="text-2xl md:text-3xl font-mono font-bold text-center mb-4 tracking-tighter">
+                  <span className="text-zinc-500">//</span> {t.watchDemo}
+                </h3>
+                <p className="text-zinc-500 font-mono text-sm text-center mb-12">{t.videoDescription}</p>
+
+                <div className="max-w-4xl mx-auto">
+                  <div className="aspect-video bg-zinc-900/80 border border-zinc-800 rounded-3xl flex items-center justify-center relative overflow-hidden group cursor-pointer hover:border-cyan-500/30 transition-all">
+                    {/* Placeholder - Replace with actual NotebookLM embed */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-purple-500/5" />
+                    <div className="relative z-10 text-center">
+                      <div className="w-20 h-20 bg-cyan-500/20 border border-cyan-500/30 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:bg-cyan-500/30 transition-all">
+                        <Play size={32} className="text-cyan-400 ml-1" />
+                      </div>
+                      <p className="text-zinc-600 font-mono text-xs uppercase tracking-widest">NotebookLM Video</p>
+                      <p className="text-zinc-700 font-mono text-[10px] mt-2">Coming Soon</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          )}
+
           {currentView === 'dashboard' && (
             <div className="space-y-6 animate-in fade-in duration-500">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
@@ -830,7 +958,7 @@ ${article.content}`;
       </main>
 
       <nav className="md:hidden sticky bottom-0 z-50 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 flex justify-around p-1">
-        {[ { icon: LayoutDashboard, view: 'dashboard' as View }, { icon: Github, view: 'connect' as View }, { icon: FileText, view: 'editor' as View }, { icon: Calendar, view: 'planner' as View }, { icon: Settings, view: 'settings' as View }, ].map((item, i) => (
+        {[ { icon: Home, view: 'home' as View }, { icon: LayoutDashboard, view: 'dashboard' as View }, { icon: Github, view: 'connect' as View }, { icon: FileText, view: 'editor' as View }, { icon: Settings, view: 'settings' as View }, ].map((item, i) => (
           <button key={i} onClick={() => { setCurrentView(item.view); if (item.view !== 'editor') setViewingSavedArticle(null); }} className={`p-3 rounded-xl transition-all ${currentView === item.view ? 'text-cyan-400 bg-cyan-500/10' : 'text-zinc-600'}`}><item.icon size={20} /></button>
         ))}
       </nav>

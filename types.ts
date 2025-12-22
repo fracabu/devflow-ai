@@ -28,5 +28,5 @@ export interface EditorialItem {
   articleData: GeneratedArticle;
 }
 
-export type View = 'dashboard' | 'connect' | 'editor' | 'planner' | 'settings';
+export type View = 'home' | 'dashboard' | 'connect' | 'editor' | 'planner' | 'settings';
 export type Language = 'it' | 'en';
