@@ -66,6 +66,9 @@ const translations = {
     step3Desc: 'Copia il Markdown con frontmatter YAML pronto per Dev.to',
     watchDemo: 'Guarda la Demo',
     videoDescription: 'Video overview generato con NotebookLM',
+    firstComment: 'Primo Commento',
+    firstCommentDesc: 'Incolla questo commento sotto il tuo articolo appena pubblicato',
+    copyComment: 'Copia Commento',
     dashboard: 'Dashboard',
     sync: 'Source Sync',
     editor: 'Laboratorio',
@@ -144,6 +147,9 @@ const translations = {
     step3Desc: 'Copy Markdown with YAML frontmatter ready for Dev.to',
     watchDemo: 'Watch Demo',
     videoDescription: 'Video overview generated with NotebookLM',
+    firstComment: 'First Comment',
+    firstCommentDesc: 'Paste this comment under your article right after publishing',
+    copyComment: 'Copy Comment',
     dashboard: 'Dashboard',
     sync: 'Source Sync',
     editor: 'Lab',
@@ -754,6 +760,31 @@ ${article.content}`;
                         </div>
                       </div>
                     </section>
+
+                    {/* First Comment Section */}
+                    {article.firstComment && (
+                      <section className="bg-zinc-900 border border-emerald-500/30 p-5 rounded-2xl shadow-xl">
+                        <h3 className="font-mono font-bold text-[10px] uppercase tracking-[0.2em] flex items-center space-x-2 mb-4 text-emerald-400">
+                          <Send size={14} />
+                          <span>{t.firstComment}</span>
+                        </h3>
+                        <p className="text-[9px] font-mono text-zinc-500 mb-3">{t.firstCommentDesc}</p>
+                        <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 mb-4">
+                          <p className="text-[11px] text-zinc-300 font-mono leading-relaxed">{article.firstComment}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(article.firstComment || '');
+                            setCopyStatus('comment');
+                            setTimeout(() => setCopyStatus(null), 2000);
+                          }}
+                          className={`w-full text-[10px] font-mono font-bold px-3 py-2.5 rounded-lg uppercase flex items-center justify-center space-x-2 transition-all ${copyStatus === 'comment' ? 'bg-emerald-500 text-black' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'}`}
+                        >
+                          {copyStatus === 'comment' ? <CheckCircle2 size={12} /> : <Copy size={12} />}
+                          <span>{copyStatus === 'comment' ? t.copied : t.copyComment}</span>
+                        </button>
+                      </section>
+                    )}
                   </div>
                 </div>
               ) : error?.isPermission ? (

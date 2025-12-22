@@ -59,7 +59,8 @@ Always respond with a JSON object containing these exact fields:
 - content: string (markdown content WITHOUT the title, start with the introduction)
 - seoTags: string[] (array of 4-6 relevant tags)
 - summary: string (meta description, 150-160 chars)
-- suggestedSlug: string (url-friendly slug)`;
+- suggestedSlug: string (url-friendly slug)
+- firstComment: string (a friendly, human first comment to post under the article - casual tone, maybe ask a question to spark discussion, 1-2 sentences max)`;
 
   const userMessage = `GENERA UN ARTICOLO TECNICO PER:
 - REPO: ${repoName}
@@ -74,7 +75,7 @@ ${signature}
 
 RESPOND ONLY WITH VALID JSON. No markdown code blocks, just raw JSON.
 Example format:
-{"title":"...","content":"...","seoTags":["tag1","tag2"],"summary":"...","suggestedSlug":"..."}`;
+{"title":"...","content":"...","seoTags":["tag1","tag2"],"summary":"...","suggestedSlug":"...","firstComment":"..."}`;
 
   const response = await callAI(config, systemPrompt, userMessage);
 

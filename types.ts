@@ -17,6 +17,7 @@ export interface GeneratedArticle {
   summary: string;
   suggestedSlug: string;
   language: Language;
+  firstComment?: string;
 }
 
 export interface EditorialItem {
