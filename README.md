@@ -41,13 +41,16 @@
 
 | Funzionalità | Descrizione |
 |--------------|-------------|
-| 🔄 **GitHub Sync** | Estrazione istantanea di metadata e README da qualsiasi repository pubblico |
+| 🔄 **GitHub Sync** | Estrazione istantanea di metadata e README da qualsiasi repository |
+| 🔑 **GitHub Token** | Supporto token per repo private e rate limit aumentato (100 repo) |
 | 🧠 **Multi-Provider AI** | Supporta OpenRouter (18+ modelli) e Google Gemini |
 | 🆓 **Modelli GRATUITI** | Usa Gemini 2.0 Flash, DeepSeek R1, Llama 3.3 senza costi |
-| ✍️ **Author Persona** | Genera contenuti nel tuo stile personale |
+| ✍️ **Storytelling Hook** | Articoli con intro personale e domanda engagement finale |
+| 💬 **Primo Commento** | Genera commento da postare dopo la pubblicazione |
 | 📅 **Editorial Planner** | Archivia e gestisci la pipeline di contenuti |
 | 🌍 **Bilingue** | Supporto completo Italiano e Inglese |
-| 📤 **Dev.to Ready** | Output Markdown con frontmatter YAML pronto per pubblicazione |
+| 📤 **Dev.to Direct** | Pubblica bozze direttamente su Dev.to con un click |
+| 🎬 **Video Demo** | Landing page con video NotebookLM integrato |
 | 🎨 **Cyber UI** | Interfaccia dark theme moderna con accenti cyan |
 
 ### 🔌 OpenRouter - Modelli AI
@@ -120,6 +123,10 @@ devflow-ai/
 ├── services/
 │   ├── ai-providers.ts  # Sistema multi-provider AI
 │   └── geminiService.ts # Generazione articoli
+├── api/
+│   └── devto.ts         # Vercel serverless function per Dev.to
+├── public/
+│   └── DevFlow_AI.mp4   # Video demo NotebookLM
 ├── vite.config.ts       # Vite configuration
 └── index.html           # HTML template con Tailwind CDN
 ```
@@ -150,13 +157,16 @@ devflow-ai/
 
 | Feature | Description |
 |---------|-------------|
-| 🔄 **GitHub Sync** | Instant metadata and README extraction from any public repo |
+| 🔄 **GitHub Sync** | Instant metadata and README extraction from any repository |
+| 🔑 **GitHub Token** | Token support for private repos and increased rate limit (100 repos) |
 | 🧠 **Multi-Provider AI** | Supports OpenRouter (18+ models) and Google Gemini |
 | 🆓 **FREE Models** | Use Gemini 2.0 Flash, DeepSeek R1, Llama 3.3 at no cost |
-| ✍️ **Author Persona** | Generates content in your personal style |
+| ✍️ **Storytelling Hook** | Articles with personal intro and engagement question |
+| 💬 **First Comment** | Auto-generates a comment to post after publishing |
 | 📅 **Editorial Planner** | Archive and manage your content pipeline |
 | 🌍 **Bilingual** | Full Italian and English support |
-| 📤 **Dev.to Ready** | Markdown output with YAML frontmatter ready to publish |
+| 📤 **Dev.to Direct** | Publish drafts directly to Dev.to with one click |
+| 🎬 **Video Demo** | Landing page with integrated NotebookLM video |
 | 🎨 **Cyber UI** | Modern dark theme interface with cyan accents |
 
 ### 🔌 OpenRouter - AI Models
@@ -241,9 +251,14 @@ GEMINI_API_KEY=AIzaSy...
 - [x] Bilingual interface (IT/EN)
 - [x] Dev.to frontmatter export
 - [x] Editorial planner with localStorage
-- [ ] Custom author persona configuration
+- [x] GitHub token support (private repos + higher rate limit)
+- [x] Dev.to direct publishing via API
+- [x] Storytelling article structure
+- [x] First comment auto-generation
+- [x] Landing page with video demo
 - [ ] Scheduled publishing
 - [ ] Analytics integration
+- [ ] Custom author persona configuration
 
 ---
 
