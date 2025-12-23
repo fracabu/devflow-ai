@@ -687,7 +687,7 @@ ${article.content}`;
           {currentView === 'editor' && (
             <div className="space-y-6 animate-in fade-in duration-500">
               {isGenerating ? (
-                <div className="text-center py-24"><Loader2 className="animate-spin text-cyan-500 mx-auto mb-6" size={48} /><h3 className="text-lg font-mono font-bold mb-2 uppercase tracking-tighter">{t.generating}</h3><p className="text-zinc-600 font-mono text-[10px] uppercase tracking-[0.3em] animate-pulse">{t.encoding}</p></div>
+                <div className="text-center py-24"><Loader2 className="animate-spin text-cyan-500 mx-auto mb-6" size={48} /><h3 className="text-lg font-mono font-bold mb-2 uppercase tracking-tighter">{(AVAILABLE_MODELS[providerConfig.provider]?.find(m => m.id === (providerConfig.model || DEFAULT_MODELS[providerConfig.provider]))?.name || providerConfig.model || 'AI').replace(/[()$\/]/g, '').replace(/\s+/g, '_')}_Drafting...</h3><p className="text-zinc-600 font-mono text-[10px] uppercase tracking-[0.3em] animate-pulse">{t.encoding}</p></div>
               ) : article ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2 space-y-4">
