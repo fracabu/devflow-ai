@@ -27,6 +27,7 @@ export interface EditorialItem {
   status: 'draft' | 'scheduled' | 'published';
   date: string;
   articleData: GeneratedArticle;
+  generatedWith?: string; // Model name used to generate the article
 }
 
 export type View = 'home' | 'dashboard' | 'connect' | 'editor' | 'planner' | 'settings';
