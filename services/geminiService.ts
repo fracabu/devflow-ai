@@ -88,7 +88,7 @@ const CONTENT_STRUCTURE = `
 
 7. **Engagement Question**: A SPECIFIC question related to the problem. NOT "What do you think?" but "What's YOUR most tedious [problem domain] task?"
 
-8. **Signature**: Final signature with links.
+8. **Signature**: NO heading. Start directly with --- then the signature content.
 `;
 
 export const analyzeRepoAndGenerateArticle = async (
