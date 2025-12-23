@@ -43,8 +43,9 @@ NEVER start without a number.
 # TAG RULES (MANDATORY)
 Exactly 4 tags.
 - 2 tags MUST be from this list: ai, opensource, webdev, javascript, typescript, python, showdev, productivity, tutorial, beginners
+- For tools/projects: ALWAYS use "showdev" (it's the #buildinpublic of Dev.to)
 - 2 tags specific to the domain (but must exist on Dev.to)
-NEVER use: AI model names (gemini3pro, gpt4), invented compound words (multiagentsystems, workflowautomation)
+NEVER use: AI model names (gemini3pro, gpt4), invented compound words (multiagentsystems, workflowautomation, contentmarketing)
 
 # VISUAL RULES (MANDATORY)
 ALWAYS insert after "The Solution" section:
@@ -69,7 +70,12 @@ const CONTENT_STRUCTURE = `
 
 3. **The Solution**: Present the tool + {% github fracabu/REPO_NAME %} + ![Tool Screenshot](URL_SCREENSHOT)
 
-4. **How It Works**: Technical details with ### subheadings for each main feature. Include code snippets and a tech stack table.
+4. **How It Works**: Technical details with ### subheadings for each main feature. Include code snippets and a Tech Stack table:
+| Category | Technologies |
+|:---------|:-------------|
+| Frontend | React, TypeScript, etc. |
+| Backend | Node.js, Fastify, etc. |
+| AI | Gemini, OpenRouter, etc. |
 
 5. **My Results**: MANDATORY Before/After table in Markdown. If README has no metrics, ESTIMATE realistic ones.
 | Metric | Before | After |
@@ -96,8 +102,8 @@ export const analyzeRepoAndGenerateArticle = async (
   const targetLang = language === 'it' ? 'Italian' : 'English';
 
   const signature = language === 'it'
-    ? `\n---\n\n**Francesco Capurso** (@fracabu)\n*Self-taught dev | AI agents & Fastify plugins*\n\n[GitHub](https://github.com/fracabu) | [npm](https://npmjs.com/~fracabu)\n\nSe ti e stato utile, lascia una star al repo!`
-    : `\n---\n\n**Francesco Capurso** (@fracabu)\n*Self-taught dev | AI agents & Fastify plugins*\n\n[GitHub](https://github.com/fracabu) | [npm](https://npmjs.com/~fracabu)\n\nFound this useful? Star the repo!`;
+    ? `\n---\n\n👤 **Francesco Capurso** (@fracabu)\n*Self-taught dev | AI agents & Fastify plugins*\n\n🔗 [GitHub](https://github.com/fracabu) | [npm](https://npmjs.com/~fracabu)\n\n⭐ Se ti è stato utile, lascia una star al repo!`
+    : `\n---\n\n👤 **Francesco Capurso** (@fracabu)\n*Self-taught dev | AI agents & Fastify plugins*\n\n🔗 [GitHub](https://github.com/fracabu) | [npm](https://npmjs.com/~fracabu)\n\n⭐ Found this useful? Star the repo!`;
 
   const systemPrompt = `${AUTHOR_PROFILE}
 ${STYLE_GUIDE}
