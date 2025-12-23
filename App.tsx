@@ -112,6 +112,10 @@ const translations = {
     pushDevto: 'Invia come Bozza',
     pushing: 'Invio in corso...',
     pushSuccess: 'Bozza creata (Privata)!',
+    schedulePublish: 'Programma',
+    scheduleDate: 'Data',
+    scheduleTime: 'Ora',
+    scheduledSuccess: 'Pubblicazione programmata!',
     viewDraft: 'Apri Bozza',
     regenerateLang: 'Rigenera in',
     langMismatch: 'L\'articolo è in una lingua diversa dalla UI.',
@@ -196,6 +200,10 @@ const translations = {
     pushDevto: 'Push as Draft',
     pushing: 'Pushing...',
     pushSuccess: 'Draft created (Private)!',
+    schedulePublish: 'Schedule',
+    scheduleDate: 'Date',
+    scheduleTime: 'Time',
+    scheduledSuccess: 'Publication scheduled!',
     viewDraft: 'Open Draft',
     regenerateLang: 'Regenerate in',
     langMismatch: 'Article language differs from UI language.',
@@ -250,6 +258,9 @@ export default function App() {
   const [isPushingToDevto, setIsPushingToDevto] = useState(false);
   const [lastPushedUrl, setLastPushedUrl] = useState<string | null>(null);
   const [pushError, setPushError] = useState<string | null>(null);
+  const [showScheduler, setShowScheduler] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
 
   // AI Provider state
   const [providerConfig, setProviderConfig] = useState<AIProviderConfig>(getStoredProviderConfig);
@@ -402,7 +413,7 @@ export default function App() {
     }
   };
 
-  const handlePushToDevto = async () => {
+  const handlePushToDevto = async (scheduled: boolean = false) => {
     if (!article) return;
     if (!devtoKey) {
       setCurrentView('settings');
@@ -412,6 +423,14 @@ export default function App() {
       }, 100);
       return;
     }
+
+    // Build published_at ISO string if scheduling
+    let published_at: string | undefined;
+    if (scheduled && scheduledDate && scheduledTime) {
+      const dateTime = new Date(`${scheduledDate}T${scheduledTime}`);
+      published_at = dateTime.toISOString();
+    }
+
     setIsPushingToDevto(true);
     setLastPushedUrl(null);
     setPushError(null);
@@ -429,6 +448,7 @@ export default function App() {
           published: false,
           tags: sanitizedTags,
           description: article.summary || '',
+          ...(published_at && { published_at }),
         })
       });
       const data = await response.json();
@@ -436,6 +456,11 @@ export default function App() {
         throw new Error(data.error || 'Failed to push to Dev.to');
       }
       setLastPushedUrl(data.url);
+      if (scheduled) {
+        setShowScheduler(false);
+        setScheduledDate('');
+        setScheduledTime('');
+      }
     } catch (err: any) {
       setPushError(err.message || t.pushError);
     } finally {
@@ -712,10 +737,35 @@ ${article.content}`;
                           <span className="text-[8px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 animate-pulse">{t.autoSaved}</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <button onClick={handlePushToDevto} disabled={isPushingToDevto} className={`text-[10px] font-mono font-bold px-3 py-2 rounded-lg transition-all uppercase flex items-center space-x-2 border shadow-lg ${!devtoKey ? 'bg-amber-500 text-black border-amber-400 hover:bg-amber-400 animate-pulse' : 'bg-zinc-800 text-white border-zinc-700 hover:border-cyan-500/50'}`}>
+                          <button onClick={() => handlePushToDevto()} disabled={isPushingToDevto} className={`text-[10px] font-mono font-bold px-3 py-2 rounded-lg transition-all uppercase flex items-center space-x-2 border shadow-lg ${!devtoKey ? 'bg-amber-500 text-black border-amber-400 hover:bg-amber-400 animate-pulse' : 'bg-zinc-800 text-white border-zinc-700 hover:border-cyan-500/50'}`}>
                             {isPushingToDevto ? <Loader2 size={12} className="animate-spin" /> : (!devtoKey ? <Key size={12} /> : <Send size={12} />)}
                             <span>{isPushingToDevto ? t.pushing : (!devtoKey ? t.missingKey : t.pushDevto)}</span>
                           </button>
+
+                          <div className="relative">
+                            <button onClick={() => setShowScheduler(!showScheduler)} disabled={!devtoKey || isPushingToDevto} className="text-[10px] font-mono font-bold px-3 py-2 rounded-lg transition-all uppercase flex items-center space-x-2 border bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-purple-500/50 disabled:opacity-50">
+                              <Calendar size={12} />
+                              <span>{t.schedulePublish}</span>
+                            </button>
+                            {showScheduler && (
+                              <div className="absolute top-full mt-2 right-0 bg-zinc-900 border border-zinc-700 rounded-xl p-4 shadow-xl z-50 min-w-[240px] animate-in fade-in slide-in-from-top-2">
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{t.scheduleDate}</label>
+                                    <input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} className="w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-purple-500 focus:outline-none" />
+                                  </div>
+                                  <div>
+                                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{t.scheduleTime}</label>
+                                    <input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className="w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-purple-500 focus:outline-none" />
+                                  </div>
+                                  <button onClick={() => handlePushToDevto(true)} disabled={!scheduledDate || !scheduledTime || isPushingToDevto} className="w-full text-[10px] font-mono font-bold px-3 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed uppercase flex items-center justify-center space-x-2">
+                                    {isPushingToDevto ? <Loader2 size={12} className="animate-spin" /> : <Calendar size={12} />}
+                                    <span>{isPushingToDevto ? t.pushing : t.schedulePublish}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                           
                           <button 
                             onClick={handleCopyWithFrontmatter} 

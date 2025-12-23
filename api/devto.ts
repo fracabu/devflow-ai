@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { title, body_markdown, published, tags, description } = req.body;
+    const { title, body_markdown, published, tags, description, published_at } = req.body;
 
     const response = await fetch('https://dev.to/api/articles', {
       method: 'POST',
@@ -33,9 +33,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         article: {
           title,
           body_markdown,
-          published: published || false,
+          published: published_at ? true : (published || false),
           tags: tags || [],
           description: description || '',
+          ...(published_at && { published_at }),
         },
       }),
     });

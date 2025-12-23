@@ -308,7 +308,7 @@ The article is created as a **private draft** on Dev.to, ready for final review.
 - [x] Storytelling article structure
 - [x] First comment auto-generation
 - [x] Landing page with video demo
-- [ ] Scheduled publishing
+- [x] Scheduled publishing
 - [ ] Analytics integration
 - [ ] Custom author persona configuration
 
