@@ -131,6 +131,31 @@ devflow-ai/
 └── index.html           # HTML template con Tailwind CDN
 ```
 
+### 🔄 Come Funziona
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  1. GitHub  │───▶│  2. AI Gen  │───▶│  3. Review  │───▶│  4. Publish │
+│  Sync Repo  │    │  18+ Models │    │  Edit/Save  │    │  to Dev.to  │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+```
+
+1. **Connect GitHub** → Inserisci username, seleziona repo (supporta token per repo private)
+2. **Generate Article** → L'AI analizza README e genera articolo SEO-optimized
+3. **Review & Edit** → Visualizza preview, modifica, salva nel planner
+4. **Publish to Dev.to** → Pubblica direttamente come bozza con un click
+
+### 📤 Dev.to Integration
+
+La pubblicazione su Dev.to avviene tramite **Vercel Serverless Function** (`/api/devto.ts`) che bypassa le restrizioni CORS del browser.
+
+**Setup:**
+1. Ottieni la tua API Key da [dev.to/settings/extensions](https://dev.to/settings/extensions)
+2. Inseriscila in **Config → Dev.to API Key**
+3. Clicca "Invia come Bozza" nell'editor
+
+L'articolo viene creato come **bozza privata** su Dev.to, pronta per la revisione finale.
+
 ### 🛠️ Tech Stack
 
 | Tecnologia | Utilizzo |
@@ -141,6 +166,7 @@ devflow-ai/
 | **Tailwind CSS** | Styling (via CDN) |
 | **OpenRouter** | Multi-model AI Gateway |
 | **@google/genai** | Gemini API SDK |
+| **Vercel Functions** | Dev.to API Proxy |
 | **Lucide React** | Icone |
 
 ---
@@ -229,6 +255,31 @@ OPENROUTER_API_KEY=sk-or-v1-...
 GEMINI_API_KEY=AIzaSy...
 ```
 
+### 🔄 How It Works
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  1. GitHub  │───▶│  2. AI Gen  │───▶│  3. Review  │───▶│  4. Publish │
+│  Sync Repo  │    │  18+ Models │    │  Edit/Save  │    │  to Dev.to  │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+```
+
+1. **Connect GitHub** → Enter username, select repo (supports token for private repos)
+2. **Generate Article** → AI analyzes README and generates SEO-optimized article
+3. **Review & Edit** → Preview, edit, save to planner
+4. **Publish to Dev.to** → Publish directly as draft with one click
+
+### 📤 Dev.to Integration
+
+Publishing to Dev.to works via **Vercel Serverless Function** (`/api/devto.ts`) that bypasses browser CORS restrictions.
+
+**Setup:**
+1. Get your API Key from [dev.to/settings/extensions](https://dev.to/settings/extensions)
+2. Enter it in **Config → Dev.to API Key**
+3. Click "Push as Draft" in the editor
+
+The article is created as a **private draft** on Dev.to, ready for final review.
+
 ### 🛠️ Tech Stack
 
 | Technology | Purpose |
@@ -239,6 +290,7 @@ GEMINI_API_KEY=AIzaSy...
 | **Tailwind CSS** | Styling (via CDN) |
 | **OpenRouter** | Multi-model AI Gateway |
 | **@google/genai** | Gemini API SDK |
+| **Vercel Functions** | Dev.to API Proxy |
 | **Lucide React** | Icons |
 
 ---
