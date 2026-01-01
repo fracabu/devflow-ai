@@ -262,6 +262,7 @@ export default function App() {
   const [showScheduler, setShowScheduler] = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
+  const [schedulingItemId, setSchedulingItemId] = useState<string | null>(null);
 
   // AI Provider state
   const [providerConfig, setProviderConfig] = useState<AIProviderConfig>(getStoredProviderConfig);
@@ -423,8 +424,9 @@ export default function App() {
     }
   };
 
-  const handlePushToDevto = async (scheduled: boolean = false) => {
-    if (!article) return;
+  const handlePushToDevto = async (scheduled: boolean = false, targetArticle?: GeneratedArticle, itemId?: string) => {
+    const artToPush = targetArticle || article;
+    if (!artToPush) return;
     if (!devtoKey) {
       setCurrentView('settings');
       setTimeout(() => {
@@ -445,9 +447,9 @@ export default function App() {
     setLastPushedUrl(null);
     setPushError(null);
     try {
-      const sanitizedTags = article.seoTags.map(tag => tag.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(tag => tag.length >= 2).slice(0, 4);
+      const sanitizedTags = artToPush.seoTags.map(tag => tag.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(tag => tag.length >= 2).slice(0, 4);
       // Sanitize content: convert literal \n to actual newlines
-      const cleanContent = article.content
+      const cleanContent = artToPush.content
         .replace(/\\n/g, '\n')
         .replace(/\r\n/g, '\n')
         .replace(/\n{3,}/g, '\n\n');
@@ -458,11 +460,11 @@ export default function App() {
           'X-API-Key': devtoKey
         },
         body: JSON.stringify({
-          title: article.title,
+          title: artToPush.title,
           body_markdown: cleanContent,
           published: false,
           tags: sanitizedTags,
-          description: article.summary || '',
+          description: artToPush.summary || '',
           ...(published_at && { published_at }),
         })
       });
@@ -471,6 +473,12 @@ export default function App() {
         throw new Error(data.error || 'Failed to push to Dev.to');
       }
       setLastPushedUrl(data.url);
+      // Update item status in planner if pushed from there
+      if (itemId) {
+        setEditorialPlan(prev => prev.map(item =>
+          item.id === itemId ? { ...item, status: scheduled ? 'scheduled' : 'published' } : item
+        ));
+      }
       if (scheduled) {
         setShowScheduler(false);
         setScheduledDate('');
@@ -483,18 +491,19 @@ export default function App() {
     }
   };
 
-  const handleCopyWithFrontmatter = () => {
-    if (!article) return;
-    const tags = article.seoTags.map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(t => t.length >= 2).slice(0, 4).join(', ');
+  const handleCopyWithFrontmatter = (targetArticle?: GeneratedArticle) => {
+    const artToCopy = targetArticle || article;
+    if (!artToCopy) return;
+    const tags = artToCopy.seoTags.map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(t => t.length >= 2).slice(0, 4).join(', ');
     // Sanitize content: convert literal \n to actual newlines and clean up
-    const cleanContent = article.content
+    const cleanContent = artToCopy.content
       .replace(/\\n/g, '\n')
       .replace(/\r\n/g, '\n')
       .replace(/\n{3,}/g, '\n\n');
     const frontmatter = `---
-title: ${article.title}
+title: ${artToCopy.title}
 published: false
-description: ${article.summary}
+description: ${artToCopy.summary}
 tags: ${tags}
 ---
 
@@ -568,14 +577,38 @@ ${cleanContent}`;
   };
 
   const updateArticleContent = (newContent: string) => {
-    if (article) {
+    if (!article) return;
+
+    // Parse frontmatter if present
+    const normalized = newContent.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const frontmatterMatch = normalized.match(/^---[ \t]*\n([\s\S]*?)\n---[ \t]*(?:\n|$)([\s\S]*)$/);
+
+    if (frontmatterMatch) {
+      const frontmatter = frontmatterMatch[1];
+      const body = frontmatterMatch[2];
+      const titleMatch = frontmatter.match(/^title:\s*(.+)$/m);
+      const tagsMatch = frontmatter.match(/^tags:\s*(.+)$/m);
+      const descMatch = frontmatter.match(/^description:\s*(.+)$/m);
+
+      const newTitle = titleMatch ? titleMatch[1].replace(/^["']|["']$/g, '').trim() : article.title;
+      const newTags = tagsMatch ? tagsMatch[1].split(',').map(t => t.trim()).filter(Boolean) : article.seoTags;
+      const newDesc = descMatch ? descMatch[1].replace(/^["']|["']$/g, '').trim() : article.summary;
+
+      setArticle({
+        ...article,
+        content: body.trim(),
+        title: newTitle,
+        seoTags: newTags,
+        summary: newDesc
+      });
+    } else {
       setArticle({ ...article, content: newContent });
     }
   };
 
   const NavItem = ({ icon: Icon, label, view }: { icon: any, label: string, view: View }) => (
     <button
-      onClick={() => { setCurrentView(view); setMobileMenuOpen(false); if (view !== 'editor') setViewingSavedArticle(null); }}
+      onClick={() => { setCurrentView(view); setMobileMenuOpen(false); if (view !== 'editor' && view !== 'planner') setViewingSavedArticle(null); }}
       className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group w-full ${currentView === view ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shadow-[0_0_15px_rgba(34,211,238,0.1)]' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800'}`}
     >
       <Icon size={20} className={currentView === view ? 'animate-pulse' : ''} />
@@ -774,67 +807,22 @@ ${cleanContent}`;
                           <span className="text-[8px] font-mono text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 animate-pulse">{t.autoSaved}</span>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <button onClick={() => handlePushToDevto()} disabled={isPushingToDevto} className={`text-[10px] font-mono font-bold px-3 py-2 rounded-lg transition-all uppercase flex items-center space-x-2 border shadow-lg ${!devtoKey ? 'bg-amber-500 text-black border-amber-400 hover:bg-amber-400 animate-pulse' : 'bg-zinc-800 text-white border-zinc-700 hover:border-cyan-500/50'}`}>
-                            {isPushingToDevto ? <Loader2 size={12} className="animate-spin" /> : (!devtoKey ? <Key size={12} /> : <Send size={12} />)}
-                            <span>{isPushingToDevto ? t.pushing : (!devtoKey ? t.missingKey : t.pushDevto)}</span>
-                          </button>
-
-                          <div className="relative">
-                            <button onClick={() => setShowScheduler(!showScheduler)} disabled={!devtoKey || isPushingToDevto} className="text-[10px] font-mono font-bold px-3 py-2 rounded-lg transition-all uppercase flex items-center space-x-2 border bg-zinc-800 text-zinc-300 border-zinc-700 hover:border-purple-500/50 disabled:opacity-50">
-                              <Calendar size={12} />
-                              <span>{t.schedulePublish}</span>
-                            </button>
-                            {showScheduler && (
-                              <div className="absolute top-full mt-2 right-0 bg-zinc-900 border border-zinc-700 rounded-xl p-4 shadow-xl z-50 min-w-[240px] animate-in fade-in slide-in-from-top-2">
-                                <div className="space-y-3">
-                                  <div>
-                                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{t.scheduleDate}</label>
-                                    <input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} className="w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-purple-500 focus:outline-none" />
-                                  </div>
-                                  <div>
-                                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{t.scheduleTime}</label>
-                                    <input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className="w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-purple-500 focus:outline-none" />
-                                  </div>
-                                  <button onClick={() => handlePushToDevto(true)} disabled={!scheduledDate || !scheduledTime || isPushingToDevto} className="w-full text-[10px] font-mono font-bold px-3 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed uppercase flex items-center justify-center space-x-2">
-                                    {isPushingToDevto ? <Loader2 size={12} className="animate-spin" /> : <Calendar size={12} />}
-                                    <span>{isPushingToDevto ? t.pushing : t.schedulePublish}</span>
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          
-                          <button 
-                            onClick={handleCopyWithFrontmatter} 
-                            className={`text-[10px] font-mono font-bold px-4 py-2 rounded-lg transition-all uppercase flex items-center space-x-2 border shadow-[0_0_20px_rgba(34,211,238,0.1)] ${copyStatus === 'copied' ? 'bg-emerald-500 text-black border-emerald-400' : 'text-cyan-400 bg-zinc-800/50 border-cyan-500/20 hover:bg-cyan-500/10'}`}
-                          >
-                            {copyStatus === 'copied' ? <CheckCircle2 size={12} /> : <FileJson size={12} />}
-                            <span>{copyStatus === 'copied' ? t.copied : t.copyDevto}</span>
-                          </button>
-
                           <button onClick={handleSaveToPlan} className="text-[10px] font-mono font-bold text-black bg-cyan-400 px-3 py-2 rounded-lg hover:bg-cyan-300 uppercase flex items-center space-x-2 shadow-[0_0_15px_rgba(34,211,238,0.2)]"><Save size={12} /><span>{t.storeArchive}</span></button>
                         </div>
                       </div>
                       
-                      {/* Virtual Editor Header - Emulating the screenshot */}
-                      <div className="mb-6 p-6 bg-zinc-950/80 border border-zinc-800 rounded-2xl space-y-4 shadow-inner">
-                        <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
-                          <span className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest flex items-center gap-2"><MousePointer2 size={10}/> Editor_Preview</span>
-                          <div className="flex gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-zinc-900"></div><div className="w-2.5 h-2.5 rounded-full bg-zinc-900"></div></div>
-                        </div>
-                        <h2 className="text-2xl font-mono font-bold text-zinc-100 leading-tight">{article.title}</h2>
-                        <div className="flex flex-wrap gap-2">
-                           {article.seoTags.slice(0, 4).map((tag, i) => (
-                             <span key={i} className="text-[11px] font-mono text-zinc-500 px-2 py-0.5 bg-zinc-900 rounded border border-zinc-800/50">#{tag.toLowerCase().replace(/[^a-z0-9]/g, '')}</span>
-                           ))}
-                        </div>
-                      </div>
+                      <div className="bg-zinc-950/50 border border-zinc-800 rounded-xl p-4 md:p-6 overflow-hidden min-h-[500px]">
+                        <textarea
+                          value={`---
+title: ${article.title}
+published: false
+description: ${article.summary}
+tags: ${article.seoTags.map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(t => t.length >= 2).slice(0, 4).join(', ')}
+---
 
-                      <div className="bg-zinc-950/50 border border-zinc-800 rounded-xl p-4 md:p-6 overflow-hidden min-h-[400px]">
-                        <textarea 
-                          value={article.content}
+${article.content}`}
                           onChange={(e) => updateArticleContent(e.target.value)}
-                          className="w-full h-full min-h-[400px] bg-transparent border-none outline-none text-zinc-400 text-xs md:text-sm font-mono leading-relaxed resize-none scrollbar-thin scrollbar-thumb-zinc-800"
+                          className="w-full h-full min-h-[500px] bg-transparent border-none outline-none text-zinc-400 text-xs md:text-sm font-mono leading-relaxed resize-none scrollbar-thin scrollbar-thumb-zinc-800"
                           spellCheck={false}
                         />
                       </div>
@@ -916,10 +904,43 @@ ${cleanContent}`;
                         <h4 className="font-mono font-bold text-sm text-zinc-200 truncate">{item.title}</h4>
                       </div>
                       <div className="flex items-center justify-between lg:justify-end space-x-4 border-t lg:border-none border-zinc-800/50 pt-3 lg:pt-0">
-                        <span className="bg-cyan-500/10 text-cyan-400 text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest border border-cyan-500/10">{item.status}</span>
-                        <div className="flex items-center space-x-2">
+                        <span className={`text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest border ${item.status === 'published' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/10' : item.status === 'scheduled' ? 'bg-purple-500/10 text-purple-400 border-purple-500/10' : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/10'}`}>{item.status}</span>
+                        <div className="flex items-center space-x-1">
+                          {/* Push to Dev.to */}
+                          <button type="button" onClick={(e) => { e.stopPropagation(); handlePushToDevto(false, item.articleData, item.id); }} disabled={isPushingToDevto || !devtoKey} className={`p-2 transition-colors disabled:opacity-50 ${!devtoKey ? 'text-amber-500' : 'text-zinc-600 hover:text-emerald-400'}`} title={devtoKey ? "Push to Dev.to" : "Configure Dev.to Key"}>
+                            {isPushingToDevto ? <Loader2 size={16} className="animate-spin" /> : (!devtoKey ? <Key size={16} /> : <Send size={16} />)}
+                          </button>
+                          {/* Schedule */}
+                          <div className="relative">
+                            <button type="button" onClick={(e) => { e.stopPropagation(); setSchedulingItemId(schedulingItemId === item.id ? null : item.id); }} disabled={!devtoKey} className="p-2 text-zinc-600 hover:text-purple-400 transition-colors disabled:opacity-50" title="Schedule">
+                              <Calendar size={16} />
+                            </button>
+                            {schedulingItemId === item.id && (
+                              <div className="absolute top-full mt-2 right-0 bg-zinc-900 border border-zinc-700 rounded-xl p-4 shadow-xl z-50 min-w-[240px] animate-in fade-in slide-in-from-top-2" onClick={(e) => e.stopPropagation()}>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{t.scheduleDate}</label>
+                                    <input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} className="w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-purple-500 focus:outline-none" />
+                                  </div>
+                                  <div>
+                                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-wider">{t.scheduleTime}</label>
+                                    <input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} className="w-full mt-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs font-mono text-white focus:border-purple-500 focus:outline-none" />
+                                  </div>
+                                  <button onClick={() => { handlePushToDevto(true, item.articleData, item.id); setSchedulingItemId(null); }} disabled={!scheduledDate || !scheduledTime || isPushingToDevto} className="w-full text-[10px] font-mono font-bold px-3 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed uppercase flex items-center justify-center space-x-2">
+                                    {isPushingToDevto ? <Loader2 size={12} className="animate-spin" /> : <Calendar size={12} />}
+                                    <span>{isPushingToDevto ? t.pushing : t.schedulePublish}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          {/* Copy */}
+                          <button type="button" onClick={(e) => { e.stopPropagation(); handleCopyWithFrontmatter(item.articleData); }} className="p-2 text-zinc-600 hover:text-cyan-400 transition-colors" title="Copy for Dev.to"><Copy size={16} /></button>
+                          {/* Edit */}
                           <button type="button" onClick={(e) => { e.stopPropagation(); setEditingItem({ ...item }); }} className="p-2 text-zinc-600 hover:text-cyan-400 transition-colors" title="Edit"><Pencil size={16} /></button>
-                          <button type="button" onClick={() => openSavedArticle(item)} className="p-2 text-zinc-600 hover:text-cyan-400 transition-colors" title="View"><Eye size={16} /></button>
+                          {/* View in Lab */}
+                          <button type="button" onClick={() => openSavedArticle(item)} className="p-2 text-zinc-600 hover:text-cyan-400 transition-colors" title="View in Lab"><Eye size={16} /></button>
+                          {/* Delete */}
                           <button type="button" onClick={(e) => handleDeleteItem(e, item.id)} className="p-2 text-zinc-700 hover:text-red-500 transition-colors" title="Delete"><Trash2 size={16} /></button>
                         </div>
                       </div>
@@ -1211,7 +1232,7 @@ ${cleanContent}`;
 
       <nav className="md:hidden sticky bottom-0 z-50 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800 flex justify-around p-1">
         {[ { icon: Home, view: 'home' as View }, { icon: LayoutDashboard, view: 'dashboard' as View }, { icon: Github, view: 'connect' as View }, { icon: FileText, view: 'editor' as View }, { icon: Settings, view: 'settings' as View }, ].map((item, i) => (
-          <button key={i} onClick={() => { setCurrentView(item.view); if (item.view !== 'editor') setViewingSavedArticle(null); }} className={`p-3 rounded-xl transition-all ${currentView === item.view ? 'text-cyan-400 bg-cyan-500/10' : 'text-zinc-600'}`}><item.icon size={20} /></button>
+          <button key={i} onClick={() => { setCurrentView(item.view); if (item.view !== 'editor' && item.view !== 'planner') setViewingSavedArticle(null); }} className={`p-3 rounded-xl transition-all ${currentView === item.view ? 'text-cyan-400 bg-cyan-500/10' : 'text-zinc-600'}`}><item.icon size={20} /></button>
         ))}
       </nav>
     </div>
