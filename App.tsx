@@ -551,6 +551,11 @@ ${cleanContent}`;
     setEditorialPlan(prev => prev.map(item =>
       item.id === editingItem.id ? editingItem : item
     ));
+    // Sync with currentArticle if it's the same article
+    if (viewingSavedArticle?.id === editingItem.id) {
+      setViewingSavedArticle(editingItem);
+      setArticle(editingItem.articleData);
+    }
     setEditingItem(null);
   };
 
@@ -975,7 +980,7 @@ ${cleanContent}`;
                   </div>
                   {/* Content */}
                   <div className="space-y-2">
-                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Content</label>
+                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Content (paste full markdown with frontmatter)</label>
                     <textarea
                       value={editingItem.articleData.content}
                       onChange={(e) => setEditingItem({ ...editingItem, articleData: { ...editingItem.articleData, content: e.target.value } })}
