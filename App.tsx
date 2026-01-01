@@ -2,38 +2,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Home,
-  LayoutDashboard, 
-  Github, 
-  FileText, 
-  Calendar, 
-  Settings, 
-  Sparkles, 
-  ArrowRight, 
-  Terminal, 
-  Cpu, 
-  Menu, 
+  LayoutDashboard,
+  Github,
+  FileText,
+  Calendar,
+  Settings,
+  Sparkles,
+  ArrowRight,
+  Terminal,
+  Cpu,
+  Menu,
   X,
   Loader2,
   ShieldAlert,
-  Info, 
-  CreditCard, 
-  Save, 
-  Trash2, 
-  Eye, 
-  Copy, 
-  ChevronLeft, 
-  Languages, 
-  ExternalLink, 
-  Send, 
-  CheckCircle2, 
-  RefreshCw, 
-  Lock, 
-  AlertCircle, 
+  Info,
+  CreditCard,
+  Save,
+  Trash2,
+  Eye,
+  Copy,
+  ChevronLeft,
+  Languages,
+  ExternalLink,
+  Send,
+  CheckCircle2,
+  RefreshCw,
+  Lock,
+  AlertCircle,
   Key,
   FileJson,
   MousePointer2,
   Play,
-  Zap
+  Zap,
+  Pencil
 } from 'lucide-react';
 import { GitHubRepo, GeneratedArticle, EditorialItem, View, Language } from './types';
 import { analyzeRepoAndGenerateArticle } from './services/geminiService';
@@ -275,6 +276,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [viewingSavedArticle, setViewingSavedArticle] = useState<EditorialItem | null>(null);
+  const [editingItem, setEditingItem] = useState<EditorialItem | null>(null);
 
   const t = translations[lang];
 
@@ -397,9 +399,17 @@ export default function App() {
         headers: { 'Accept': 'application/vnd.github.raw' }
       });
       const readmeContent = response.ok ? await response.text() : "No README found.";
-      
+
       const result = await analyzeRepoAndGenerateArticle(repo.name, readmeContent, repo.description || "No description provided.", genLang, providerConfig);
-      setArticle(result);
+      // Sanitize content: convert literal \n to actual newlines
+      const sanitizedResult = {
+        ...result,
+        content: result.content
+          .replace(/\\n/g, '\n')
+          .replace(/\r\n/g, '\n')
+          .replace(/\n{3,}/g, '\n\n')
+      };
+      setArticle(sanitizedResult);
     } catch (err: any) {
       const errorMessage = err.message || "";
       const isPerm = errorMessage.includes('403') || errorMessage.includes('permission') || errorMessage.includes('Requested entity was not found.');
@@ -436,6 +446,11 @@ export default function App() {
     setPushError(null);
     try {
       const sanitizedTags = article.seoTags.map(tag => tag.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(tag => tag.length >= 2).slice(0, 4);
+      // Sanitize content: convert literal \n to actual newlines
+      const cleanContent = article.content
+        .replace(/\\n/g, '\n')
+        .replace(/\r\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n');
       const response = await fetch('/api/devto', {
         method: 'POST',
         headers: {
@@ -444,7 +459,7 @@ export default function App() {
         },
         body: JSON.stringify({
           title: article.title,
-          body_markdown: article.content,
+          body_markdown: cleanContent,
           published: false,
           tags: sanitizedTags,
           description: article.summary || '',
@@ -471,15 +486,19 @@ export default function App() {
   const handleCopyWithFrontmatter = () => {
     if (!article) return;
     const tags = article.seoTags.map(t => t.toLowerCase().replace(/[^a-z0-9]/g, '')).filter(t => t.length >= 2).slice(0, 4).join(', ');
+    // Sanitize content: convert literal \n to actual newlines and clean up
+    const cleanContent = article.content
+      .replace(/\\n/g, '\n')
+      .replace(/\r\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n');
     const frontmatter = `---
 title: ${article.title}
 published: false
 description: ${article.summary}
 tags: ${tags}
-canonical_url: https://github.com/fracabu/${selectedRepo?.name || viewingSavedArticle?.repoName || ''}
 ---
 
-${article.content}`;
+${cleanContent}`;
     navigator.clipboard.writeText(frontmatter);
     setCopyStatus('copied');
     setTimeout(() => setCopyStatus(null), 4000);
@@ -520,6 +539,19 @@ ${article.content}`;
       setArticle(null);
       setCurrentView('dashboard');
     }
+  };
+
+  const openEditModal = (e: React.MouseEvent, item: EditorialItem) => {
+    e.stopPropagation();
+    setEditingItem({ ...item });
+  };
+
+  const handleUpdateItem = () => {
+    if (!editingItem) return;
+    setEditorialPlan(prev => prev.map(item =>
+      item.id === editingItem.id ? editingItem : item
+    ));
+    setEditingItem(null);
   };
 
   const openSavedArticle = (item: EditorialItem) => {
@@ -860,7 +892,103 @@ ${article.content}`;
           )}
 
           {currentView === 'planner' && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 duration-500"><div className="flex items-center justify-between border-b border-zinc-800 pb-4"><h2 className="text-2xl font-mono font-bold uppercase tracking-tighter">{t.editorialArchive}</h2><div className="bg-zinc-900 px-3 py-1 rounded-full text-[9px] font-mono text-zinc-500 uppercase border border-zinc-800">{editorialPlan.length} Entries</div></div>{editorialPlan.length > 0 ? (<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">{editorialPlan.map((item) => (<div key={item.id} onClick={() => openSavedArticle(item)} className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl hover:border-cyan-500/30 transition-all group cursor-pointer flex flex-col lg:flex-row lg:items-center justify-between gap-4"><div className="flex-1 min-w-0"><div className="flex items-center space-x-2 mb-1"><span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">{item.repoName}</span><span className="w-1 h-1 rounded-full bg-zinc-800"></span><span className="text-[9px] font-mono text-zinc-600">{item.date}</span>{item.generatedWith && <><span className="w-1 h-1 rounded-full bg-zinc-800"></span><span className="text-[9px] font-mono text-cyan-500/70">{item.generatedWith}</span></>}</div><h4 className="font-mono font-bold text-sm text-zinc-200 truncate group-hover:text-cyan-400 transition-colors">{item.title}</h4></div><div className="flex items-center justify-between lg:justify-end space-x-4 border-t lg:border-none border-zinc-800/50 pt-3 lg:pt-0"><span className="bg-cyan-500/10 text-cyan-400 text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest border border-cyan-500/10">{item.status}</span><div className="flex items-center space-x-2"><button className="p-2 text-zinc-600 hover:text-cyan-400 transition-colors"><Eye size={16} /></button><button onClick={(e) => handleDeleteItem(e, item.id)} className="p-2 text-zinc-700 hover:text-red-500 transition-colors"><Trash2 size={16} /></button></div></div></div>))}</div>) : (<div className="text-center py-20 bg-zinc-900/20 border border-dashed border-zinc-800 rounded-3xl"><Calendar size={40} className="mx-auto text-zinc-800 mb-4" /><p className="text-zinc-600 font-mono text-[10px] uppercase tracking-widest mb-6">{t.noArchived}</p><button onClick={() => setCurrentView('dashboard')} className="text-cyan-500 font-mono text-[10px] uppercase hover:underline">{t.startExtraction}</button></div>)}</div>
+            <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <h2 className="text-2xl font-mono font-bold uppercase tracking-tighter">{t.editorialArchive}</h2>
+                <div className="bg-zinc-900 px-3 py-1 rounded-full text-[9px] font-mono text-zinc-500 uppercase border border-zinc-800">{editorialPlan.length} Entries</div>
+              </div>
+              {editorialPlan.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
+                  {editorialPlan.map((item) => (
+                    <div key={item.id} className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-2xl hover:border-cyan-500/30 transition-all group flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">{item.repoName}</span>
+                          <span className="w-1 h-1 rounded-full bg-zinc-800"></span>
+                          <span className="text-[9px] font-mono text-zinc-600">{item.date}</span>
+                          {item.generatedWith && <><span className="w-1 h-1 rounded-full bg-zinc-800"></span><span className="text-[9px] font-mono text-cyan-500/70">{item.generatedWith}</span></>}
+                        </div>
+                        <h4 className="font-mono font-bold text-sm text-zinc-200 truncate">{item.title}</h4>
+                      </div>
+                      <div className="flex items-center justify-between lg:justify-end space-x-4 border-t lg:border-none border-zinc-800/50 pt-3 lg:pt-0">
+                        <span className="bg-cyan-500/10 text-cyan-400 text-[8px] font-bold px-2 py-1 rounded uppercase tracking-widest border border-cyan-500/10">{item.status}</span>
+                        <div className="flex items-center space-x-2">
+                          <button type="button" onClick={(e) => { e.stopPropagation(); setEditingItem({ ...item }); }} className="p-2 text-zinc-600 hover:text-cyan-400 transition-colors" title="Edit"><Pencil size={16} /></button>
+                          <button type="button" onClick={() => openSavedArticle(item)} className="p-2 text-zinc-600 hover:text-cyan-400 transition-colors" title="View"><Eye size={16} /></button>
+                          <button type="button" onClick={(e) => handleDeleteItem(e, item.id)} className="p-2 text-zinc-700 hover:text-red-500 transition-colors" title="Delete"><Trash2 size={16} /></button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-zinc-900/20 border border-dashed border-zinc-800 rounded-3xl">
+                  <Calendar size={40} className="mx-auto text-zinc-800 mb-4" />
+                  <p className="text-zinc-600 font-mono text-[10px] uppercase tracking-widest mb-6">{t.noArchived}</p>
+                  <button onClick={() => setCurrentView('dashboard')} className="text-cyan-500 font-mono text-[10px] uppercase hover:underline">{t.startExtraction}</button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Edit Modal */}
+          {editingItem && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setEditingItem(null)}>
+              <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+                  <h3 className="font-mono font-bold text-sm uppercase tracking-widest text-cyan-400">Edit Draft</h3>
+                  <button onClick={() => setEditingItem(null)} className="p-2 text-zinc-500 hover:text-white transition-colors"><X size={20} /></button>
+                </div>
+                <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(90vh-140px)]">
+                  {/* Title */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Title</label>
+                    <input
+                      type="text"
+                      value={editingItem.title}
+                      onChange={(e) => setEditingItem({ ...editingItem, title: e.target.value, articleData: { ...editingItem.articleData, title: e.target.value } })}
+                      className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl font-mono text-sm outline-none focus:border-cyan-500 transition-all"
+                    />
+                  </div>
+                  {/* Tags */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      value={editingItem.articleData.seoTags?.join(', ') || ''}
+                      onChange={(e) => setEditingItem({ ...editingItem, articleData: { ...editingItem.articleData, seoTags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) } })}
+                      className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl font-mono text-sm outline-none focus:border-cyan-500 transition-all"
+                    />
+                  </div>
+                  {/* Status */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Status</label>
+                    <select
+                      value={editingItem.status}
+                      onChange={(e) => setEditingItem({ ...editingItem, status: e.target.value as 'draft' | 'scheduled' | 'published' })}
+                      className="w-full px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl font-mono text-sm outline-none focus:border-cyan-500 transition-all"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="scheduled">Scheduled</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                  {/* Content */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">Content</label>
+                    <textarea
+                      value={editingItem.articleData.content}
+                      onChange={(e) => setEditingItem({ ...editingItem, articleData: { ...editingItem.articleData, content: e.target.value } })}
+                      className="w-full h-80 px-4 py-3 bg-zinc-950 border border-zinc-800 rounded-xl font-mono text-xs outline-none focus:border-cyan-500 transition-all resize-none"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-3 p-4 border-t border-zinc-800">
+                  <button onClick={() => setEditingItem(null)} className="px-4 py-2 text-zinc-500 font-mono text-xs uppercase hover:text-white transition-colors">Cancel</button>
+                  <button onClick={handleUpdateItem} className="px-6 py-2 bg-cyan-500 text-black font-mono font-bold text-xs uppercase rounded-lg hover:bg-cyan-400 transition-colors flex items-center gap-2"><Save size={14} /> Save</button>
+                </div>
+              </div>
+            </div>
           )}
 
           {currentView === 'settings' && (
