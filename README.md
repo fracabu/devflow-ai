@@ -9,6 +9,14 @@
 </p>
 
 <p align="center">
+  <a href="https://stream.mux.com/iZCN3o5iMlKe200pJCLnv00nfO02Jbzia2qPKGrJf17TkA.m3u8">
+    <img src="https://image.mux.com/iZCN3o5iMlKe200pJCLnv00nfO02Jbzia2qPKGrJf17TkA/thumbnail.png?time=5&width=640" alt="Watch Demo Video" width="640">
+  </a>
+  <br>
+  <em>▶️ Click to watch demo video</em>
+</p>
+
+<p align="center">
   <a href="#-italiano">Italiano</a> •
   <a href="#-english">English</a>
 </p>
