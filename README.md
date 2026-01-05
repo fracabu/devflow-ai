@@ -9,8 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="https://stream.mux.com/iZCN3o5iMlKe200pJCLnv00nfO02Jbzia2qPKGrJf17TkA.m3u8">
-    <img src="https://image.mux.com/iZCN3o5iMlKe200pJCLnv00nfO02Jbzia2qPKGrJf17TkA/thumbnail.png?time=5&width=640" alt="Watch Demo Video" width="640">
+  <a href="https://stream.mux.com/01bHd1TJnudzhftxG1Iwsjc7aLZevXnnHdWpmdjN9RbM.m3u8">
+    <img src="https://image.mux.com/01bHd1TJnudzhftxG1Iwsjc7aLZevXnnHdWpmdjN9RbM/thumbnail.png?time=5&width=640" alt="Watch Demo Video" width="640">
   </a>
   <br>
   <em>▶️ Click to watch demo video</em>
